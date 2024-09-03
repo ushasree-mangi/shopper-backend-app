@@ -32,7 +32,7 @@ initializeDBAndServer();
 
 
 //GET Products
-app.get("/", async (request, response) => {
+app.get("/products/", async (request, response) => {
   const getProductsQuery = `
     SELECT
       *
