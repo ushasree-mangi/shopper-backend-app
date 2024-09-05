@@ -6,6 +6,7 @@ const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 const bcrypt=require('bcrypt')
 const app = express();
+const cors = require('cors');
 
 const jwt=require("jsonwebtoken")
 const {v4}=require("uuid")
@@ -13,6 +14,7 @@ const uuidv4=v4
 
 
 app.use(express.json())
+app.use(cors());
 
 const PORT = process.env.PORT || 3000
 
