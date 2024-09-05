@@ -45,8 +45,33 @@ const initializeDBAndServer = async () => {
 };
 initializeDBAndServer();
 
+//middleware Api 
+
+const authenticateToken = (request, response, next) => {
+  let jwtToken;
+  const authHeader = request.headers["authorization"];
+  if (authHeader !== undefined) {
+    jwtToken = authHeader.split(" ")[1];
+  }
+  if (jwtToken === undefined) {
+   
+    response.status(401).json({error_msg:"Invalid JWT Token"});
+  } else {
+    jwt.verify(jwtToken, "MY_SECRET_TOKEN", async (error, payload) => {
+      if (error) {
+        response.status(401).json({error_msg:"Invalid JWT Token"});
+      } else {
+        console.log("middleware function executed")
+        next();
+
+      }
+    });
+  }
+};
+
+
 //GET Products
-app.get("/products/", async (request, response) => {
+app.get("/products/",authenticateToken, async (request, response) => {
   const getProductsQuery = `
     SELECT
       *
@@ -54,7 +79,7 @@ app.get("/products/", async (request, response) => {
       products  
       ;`;
   const productsArray = await db.all(getProductsQuery);
-  response.send(productsArray);
+  response.status(201).json({products:productsArray});
 });
 
 
@@ -112,28 +137,5 @@ app.post("/login", async (request, response) => {
   }
 });
 
-//middleware Api 
-
-const authenticateToken = (request, response, next) => {
-  let jwtToken;
-  const authHeader = request.headers["authorization"];
-  if (authHeader !== undefined) {
-    jwtToken = authHeader.split(" ")[1];
-  }
-  if (jwtToken === undefined) {
-    response.status(401);
-    response.send("Invalid JWT Token");
-  } else {
-    jwt.verify(jwtToken, "MY_SECRET_TOKEN", async (error, payload) => {
-      if (error) {
-        response.status(401);
-        response.send("Invalid JWT Token");
-      } else {
-        request.email = payload.email;
-        next();
-      }
-    });
-  }
-};
 
 
