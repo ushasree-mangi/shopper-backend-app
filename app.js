@@ -36,7 +36,6 @@ const initializeDBAndServer = async () => {
 };
 initializeDBAndServer();
 
-
 //GET Products
 app.get("/products/", async (request, response) => {
   const getProductsQuery = `
@@ -79,6 +78,7 @@ app.get("/products/", async (request, response) => {
           )`;
       const dbResponse = await db.run(createUserQuery);
       const newUserId = dbResponse.lastID;
+      console.log(dbResponse)
       response.send(`Created new user with ${newUserId}`);
     } else {
       response.status = 400;

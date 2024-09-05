@@ -10,7 +10,7 @@ let db = new sqlite3.Database('./shopperAppDatabase.db', (err) => {
 
 // Create users table
 db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY ,
+    id TEXT PRIMARY KEY ,
     username TEXT NOT NULL,
     password TEXT NOT NULL
 )`, (err) => {
