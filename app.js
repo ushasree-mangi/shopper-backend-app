@@ -88,10 +88,11 @@ app.get("/products/", async (request, response) => {
       const dbResponse = await db.run(createUserQuery);
       const newUserId = dbResponse.lastID;
       console.log(dbResponse)
-      response.send(`Created new user with ${newUserId}`);
+      response.status(201).json({ message: `Created new user with ${newUserId}` });
+  
+     
     } else {
-      response.status = 400;
-      response.send("User already exists");
+      response.status(400).json({ error_msg: "User already exists" });
     }
   }); 
  
