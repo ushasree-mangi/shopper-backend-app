@@ -12,9 +12,16 @@ const jwt=require("jsonwebtoken")
 const {v4}=require("uuid")
 const uuidv4=v4
 
+const corsOptions = {
+  origin: 'http://localhost:3000', // Frontend running locally on port 3000
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
 
 app.use(express.json())
-app.use(cors());
+app.use(cors(corsOptions));
 
 const PORT = process.env.PORT || 3000
 
