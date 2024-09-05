@@ -82,7 +82,18 @@ app.get("/products/",authenticateToken, async (request, response) => {
   response.status(201).json({products:productsArray});
 });
 
-
+//GET Particular Product
+app.get("/products/:id/",authenticateToken, async (request, response) => {
+  const {id} =request.params;
+  const getProductsQuery = `
+    SELECT
+      *
+    FROM
+      products where id=${id} 
+      ;`;
+  const productDetails = await db.all(getProductsQuery);
+  response.status(201).json({productDetails});
+});
 
 //Register Api
   app.post("/register/", async (request, response) => {
