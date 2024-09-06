@@ -23,7 +23,7 @@ const corsOptions = {
 app.use(express.json())
 app.use(cors(corsOptions));
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 4000
 
 const dbPath = path.join(__dirname, "shopperAppDatabase.db");
 
@@ -36,7 +36,7 @@ const initializeDBAndServer = async () => {
       driver: sqlite3.Database,
     });
     app.listen(PORT, () => {
-      console.log("Server Running at http://localhost:3000/");
+      console.log("Server Running at http://localhost:4000/");
     });
   } catch (e) {
     console.log(`DB Error: ${e.message}`);
