@@ -200,7 +200,7 @@ app.post("/cart/add",authenticateToken,async(request,response)=>{
     response.status(201).json({ message: "Product added to cart successfully" });
   } else {
     // Product is already in the cart, do not add again
-    return response.status(400).json({ message: "Product already in cart" });
+    return response.status(201).json({ message: "Product already in cart" });
   }
    
   }catch (error) {
