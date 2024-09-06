@@ -76,7 +76,7 @@ app.get("/products/",authenticateToken, async (request, response) => {
     SELECT
       *
     FROM
-      products  
+      products ORDER BY RANDOM() 
       ;`;
   const productsArray = await db.all(getProductsQuery);
   response.status(201).json({products:productsArray});
