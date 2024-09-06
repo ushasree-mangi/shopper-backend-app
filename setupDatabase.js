@@ -9,15 +9,15 @@ let db = new sqlite3.Database('./shopperAppDatabase.db', (err) => {
 });
 
 // Create users table
-db.run(`CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY ,
-    username TEXT NOT NULL,
-    password TEXT NOT NULL
+db.run(`CREATE TABLE IF NOT EXISTS cart (
+    productId INT PRIMARY KEY ,
+    quantity INT NOT NULL,
+    
 )`, (err) => {
     if (err) {
         console.error(err.message);
     }
-    console.log('Users table created or already exists.');
+    console.log('cart table created or already exists.');
 });
 
 // Close the database connection

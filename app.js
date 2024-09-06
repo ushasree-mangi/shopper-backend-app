@@ -61,7 +61,9 @@ const authenticateToken = (request, response, next) => {
       if (error) {
         response.status(401).json({error_msg:"Invalid JWT Token"});
       } else {
-        console.log("middleware function executed")
+        console.log(payload)
+        console.log("above is within middleware")
+        request.payload=payload
         next();
 
       }
@@ -69,6 +71,64 @@ const authenticateToken = (request, response, next) => {
   }
 };
 
+//Register Api
+app.post("/register/", async (request, response) => {
+    
+  const {username,password}=request.body
+  const id=uuidv4()
+  console.log(`api log : id :${id} username:${username} password ${password}`)
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const selectUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
+  const dbUser = await db.get(selectUserQuery);
+  if (dbUser === undefined) {
+    const createUserQuery = `
+      INSERT INTO 
+        users (id ,username, password) 
+      VALUES 
+        ('${id}',
+          '${username}', 
+          
+          '${hashedPassword}'
+          
+        )`;
+    const dbResponse = await db.run(createUserQuery);
+    const newUserId = dbResponse.lastID;
+    console.log(dbResponse)
+    response.status(201).json({ message: `Created new user with ${newUserId}` });
+
+   
+  } else {
+    response.status(400).json({ error_msg: "User already exists" });
+  }
+}); 
+
+//Login Api
+app.post("/login", async (request, response) => {
+const { username, password } = request.body;
+const selectUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
+const dbUser = await db.get(selectUserQuery);
+if (dbUser === undefined) {
+  response.status(400).json({ error_msg: "invalid user" });
+} else {
+  const {id}=dbUser 
+
+  const isPasswordMatched = await bcrypt.compare(password, dbUser.password);
+  if (isPasswordMatched === true) {
+    const payload = {
+      username:username,
+      userId:id,
+     };
+    console.log(dbUser)
+    console.log(payload)
+    
+    const jwtToken = jwt.sign(payload, "MY_SECRET_TOKEN");
+    response.status(201).json({ jwt_token:jwtToken });
+  } else {
+    
+    response.status(400).json({error_msg:"Invalid Password"});
+  }
+}
+});
 
 //GET Products
 app.get("/products/",authenticateToken, async (request, response) => {
@@ -95,58 +155,77 @@ app.get("/products/:id/",authenticateToken, async (request, response) => {
   response.status(201).json({productDetails});
 });
 
-//Register Api
-  app.post("/register/", async (request, response) => {
-    
-    const {username,password}=request.body
-    const id=uuidv4()
-    console.log(`api log : id :${id} username:${username} password ${password}`)
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const selectUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
-    const dbUser = await db.get(selectUserQuery);
-    if (dbUser === undefined) {
-      const createUserQuery = `
-        INSERT INTO 
-          users (id ,username, password) 
-        VALUES 
-          ('${id}',
-            '${username}', 
-            
-            '${hashedPassword}'
-            
-          )`;
-      const dbResponse = await db.run(createUserQuery);
-      const newUserId = dbResponse.lastID;
-      console.log(dbResponse)
-      response.status(201).json({ message: `Created new user with ${newUserId}` });
-  
-     
-    } else {
-      response.status(400).json({ error_msg: "User already exists" });
-    }
-  }); 
- 
-//Login Api
-app.post("/login", async (request, response) => {
-  const { username, password } = request.body;
-  const selectUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
-  const dbUser = await db.get(selectUserQuery);
-  if (dbUser === undefined) {
-    response.status(400).json({ error_msg: "invalid user" });
-  } else {
-    const isPasswordMatched = await bcrypt.compare(password, dbUser.password);
-    if (isPasswordMatched === true) {
-        const payload = {
-        username: username,
-      };
-      const jwtToken = jwt.sign(payload, "MY_SECRET_TOKEN");
-      response.status(201).json({ jwt_token:jwtToken });
-    } else {
-      
-      response.status(400).json({error_msg:"Invalid Password"});
-    }
+
+//CART API 
+app.post("/cart/add",authenticateToken,async(request,response)=>{
+  const {  productId, quantity } = request.body;
+  const {userId}=request.payload
+  console.log(userId)
+  if (!userId) {
+    return response.status(400).json({ error_msg: "User ID not found in token" });
   }
+  console.log(`user id ${userId}`)
+  try{ 
+  let cartId;
+  // Check if the user already has a cart
+  const getCartQuery = `SELECT * FROM user_cart WHERE user_id = ?`;
+  const userCartData = await db.get(getCartQuery, [userId]);
+
+  
+
+  if(userCartData===undefined){
+
+    // Create a new cart for the user
+    const createCartQuery = `INSERT INTO user_cart (user_id) VALUES (?)`;
+    const dbResponse = await db.run(createCartQuery, [userId]);
+
+    
+  cartId = dbResponse.lastID; 
+  
+  }
+  else{
+    cartId=userCartData.cart_id
+  }
+  
+  console.log(`cart id ${cartId}`) 
+
+  // Add product to the cart
+  const addProductQuery = `INSERT INTO cart (cart_id, product_id, quantity) VALUES (?, ?, ?)`;
+  await db.run(addProductQuery, [cartId, productId, quantity]);
+
+  response.status(201).send("Product added to the cart successfully");
+   
+  }catch (error) {
+    console.error(error);
+    response.status(500).send("An error occurred while adding the product to the cart");
+  }
+
 });
 
 
-
+// Endpoint to get cart products
+app.get('/cart', authenticateToken, async (request, response) => {
+  const {userId} = request.payload;
+  
+  try {
+    // Fetch the user's cart
+    const getCartQuery = `
+      SELECT c.product_id, p.name, p.price, c.quantity,p.imageUrl
+      FROM cart AS c
+      JOIN products AS p ON c.product_id = p.id
+      JOIN user_cart AS uc ON c.cart_id = uc.cart_id
+      WHERE uc.user_id = ?
+    `;
+    
+    const cartItems = await db.all(getCartQuery, [userId]);
+    
+    if (cartItems.length === 0) {
+      return response.status(404).json({ message: 'No items in the cart' });
+    }
+    
+    response.status(200).json({ cartItems });
+  } catch (error) {
+    console.error(error);
+    response.status(500).json({ error: 'Failed to fetch cart items' });
+  }
+});
