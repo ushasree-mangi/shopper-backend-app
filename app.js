@@ -161,9 +161,7 @@ app.post("/cart/add",authenticateToken,async(request,response)=>{
   const {  productId, quantity } = request.body;
   const {userId}=request.payload
   console.log(userId)
-  if (!userId) {
-    return response.status(400).json({ error_msg: "User ID not found in token" });
-  }
+  
   console.log(`user id ${userId}`)
   try{ 
   let cartId;
@@ -180,7 +178,7 @@ app.post("/cart/add",authenticateToken,async(request,response)=>{
     const dbResponse = await db.run(createCartQuery, [userId]);
 
     
-  cartId = dbResponse.lastID; 
+    cartId = dbResponse.lastID; 
   
   }
   else{
@@ -202,12 +200,12 @@ app.post("/cart/add",authenticateToken,async(request,response)=>{
     response.status(201).json({ message: "Product added to cart successfully" });
   } else {
     // Product is already in the cart, do not add again
-    return response.status(400).json({ error_msg: "Product already in cart" });
+    return response.status(400).json({ message: "Product already in cart" });
   }
    
   }catch (error) {
     console.error(error);
-    response.status(500).send("An error occurred while adding the product to the cart");
+    response.status(500).json({message:"An error occurred while adding the product to the cart"});
   }
 
 });
