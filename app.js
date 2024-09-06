@@ -184,16 +184,26 @@ app.post("/cart/add",authenticateToken,async(request,response)=>{
   
   }
   else{
-    cartId=userCartData.cart_id
+    cartId=userCartData.cart_id 
+   
   }
   
   console.log(`cart id ${cartId}`) 
 
-  // Add product to the cart
-  const addProductQuery = `INSERT INTO cart (cart_id, product_id, quantity) VALUES (?, ?, ?)`;
-  await db.run(addProductQuery, [cartId, productId, quantity]);
+  // Step 3: Check if the product is already in the cart
+  const checkProductQuery = `SELECT * FROM cart WHERE cart_id = ? AND product_id = ?`;
+  const existingProduct = await db.get(checkProductQuery, [cartId, productId]);
 
-  response.status(201).send("Product added to the cart successfully");
+  if (existingProduct===undefined) {
+    
+    // Step 4: Add the product to the cart if it does not exist
+    const addProductQuery = `INSERT INTO cart (cart_id, product_id, quantity) VALUES (?, ?, ?)`;
+    await db.run(addProductQuery, [cartId, productId, quantity]);
+    response.status(201).json({ message: "Product added to cart successfully" });
+  } else {
+    // Product is already in the cart, do not add again
+    return response.status(400).json({ error_msg: "Product already in cart" });
+  }
    
   }catch (error) {
     console.error(error);
