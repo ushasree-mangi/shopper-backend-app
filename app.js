@@ -14,9 +14,9 @@ const uuidv4=v4
 
 
 const allowedOrigins = [
-  'https://ushasree-mangi-shopper-ftqsv9u84-ushasree-mangis-projects.vercel.app/',
-  'https://ushasree-mangi-shopper-app.vercel.app/',
-  'https://ushasree-mangi-shopper-app-git-main-ushasree-mangis-projects.vercel.app/'
+  'https://ushasree-mangi-shopper-ftqsv9u84-ushasree-mangis-projects.vercel.app',
+  'https://ushasree-mangi-shopper-app.vercel.app',
+  'https://ushasree-mangi-shopper-app-git-main-ushasree-mangis-projects.vercel.app'
   
 ];
 
