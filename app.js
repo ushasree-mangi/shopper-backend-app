@@ -12,9 +12,25 @@ const jwt=require("jsonwebtoken")
 const {v4}=require("uuid")
 const uuidv4=v4
 
+
+const allowedOrigins = [
+  'https://ushasree-mangi-shopper-ftqsv9u84-ushasree-mangis-projects.vercel.app/',
+  'https://ushasree-mangi-shopper-app.vercel.app/',
+  'https://ushasree-mangi-shopper-app-git-main-ushasree-mangis-projects.vercel.app/'
+  
+];
+
+
+
 const corsOptions = {
-  origin: 'https://ushasree-mangi-shopper-app.vercel.app/', // Allow localhost:3000
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS
+  origin: (origin, callback) => {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Allow cookies and credentials
 };
