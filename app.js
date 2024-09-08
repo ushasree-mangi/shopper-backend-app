@@ -13,15 +13,17 @@ const {v4}=require("uuid")
 const uuidv4=v4
 
 const corsOptions = {
-  origin: 'http://localhost:3000', // Frontend running locally on port 3000
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: 'http://localhost:3000', // Allow localhost:3000
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  credentials: true // Allow cookies and credentials
 };
 
 
 app.use(express.json())
 app.use(cors(corsOptions));
+
+app.options('*', cors(corsOptions));
 
 const PORT = process.env.PORT || 4000
 
