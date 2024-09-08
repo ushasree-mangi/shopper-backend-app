@@ -13,7 +13,7 @@ const {v4}=require("uuid")
 const uuidv4=v4
 
 const corsOptions = {
-  origin: 'https://ushasree-mangi-shopper-ftqsv9u84-ushasree-mangis-projects.vercel.app', // Allow localhost:3000
+  origin: 'https://ushasree-mangi-shopper-app.vercel.app/', // Allow localhost:3000
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Allow cookies and credentials
