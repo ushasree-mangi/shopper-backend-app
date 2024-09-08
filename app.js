@@ -63,8 +63,7 @@ const authenticateToken = (request, response, next) => {
       if (error) {
         response.status(401).json({error_msg:"Invalid JWT Token"});
       } else {
-        console.log(payload)
-        console.log("above is within middleware")
+       
         request.payload=payload
         next();
 
@@ -78,7 +77,7 @@ app.post("/register/", async (request, response) => {
     
   const {username,password}=request.body
   const id=uuidv4()
-  console.log(`api log : id :${id} username:${username} password ${password}`)
+ 
   const hashedPassword = await bcrypt.hash(password, 10);
   const selectUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
   const dbUser = await db.get(selectUserQuery);
@@ -95,7 +94,7 @@ app.post("/register/", async (request, response) => {
         )`;
     const dbResponse = await db.run(createUserQuery);
     const newUserId = dbResponse.lastID;
-    console.log(dbResponse)
+   
     response.status(201).json({ message: `Created new user with ${newUserId}` });
 
    
@@ -120,8 +119,6 @@ if (dbUser === undefined) {
       username:username,
       userId:id,
      };
-    console.log(dbUser)
-    console.log(payload)
     
     const jwtToken = jwt.sign(payload, "MY_SECRET_TOKEN");
     response.status(201).json({ jwt_token:jwtToken });
@@ -162,9 +159,7 @@ app.get("/products/:id/",authenticateToken, async (request, response) => {
 app.post("/cart/add",authenticateToken,async(request,response)=>{
   const {  productId, quantity } = request.body;
   const {userId}=request.payload
-  console.log(userId)
   
-  console.log(`user id ${userId}`)
   try{ 
   let cartId;
   // Check if the user already has a cart
@@ -188,7 +183,7 @@ app.post("/cart/add",authenticateToken,async(request,response)=>{
    
   }
   
-  console.log(`cart id ${cartId}`) 
+  
 
   // Step 3: Check if the product is already in the cart
   const checkProductQuery = `SELECT * FROM cart WHERE cart_id = ? AND product_id = ?`;
