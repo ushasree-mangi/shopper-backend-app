@@ -166,7 +166,7 @@ app.get("/products/:id/",authenticateToken, async (request, response) => {
     FROM
       products where id=${id} 
       ;`;
-  const productDetails = await db.all(getProductsQuery);
+  const productDetails = await db.get(getProductsQuery);
   response.status(201).json({productDetails});
 });
 
@@ -248,5 +248,27 @@ app.get('/cart', authenticateToken, async (request, response) => {
   } catch (error) {
     console.error(error);
     response.status(500).json({ error: 'Failed to fetch cart items' });
+  }
+});
+
+// Endpoint to DELETE cart product
+app.delete('/cart/:productId', authenticateToken, async (request, response) => {
+  const {productId} = request.params;
+  
+  try {
+    // delete the cart item
+    const getCartQuery = `
+      DELETE from cart 
+      WHERE cart.product_id = ?
+    `;
+    
+    const response = await db.run(getCartQuery, [productId]);
+    
+  
+    
+    response.status(200).json({ cartItems });
+  } catch (error) {
+    console.error(error);
+    response.status(500).json({ error: 'Failed to delete cart item' });
   }
 });
