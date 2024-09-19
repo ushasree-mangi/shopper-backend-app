@@ -252,8 +252,8 @@ app.get('/cart', authenticateToken, async (request, response) => {
 });
 
 // Endpoint to DELETE cart product
-app.delete('/cart/:productId', authenticateToken, async (request, response) => {
-  const {productId} = request.params;
+app.delete('/cart', authenticateToken, async (request, response) => {
+  const {productId} = request.body;
   
   try {
     // delete the cart item
