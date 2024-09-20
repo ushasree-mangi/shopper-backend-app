@@ -22,7 +22,7 @@ const allowedOrigins = [
 
 
 
-const corsOptions = {
+/*const corsOptions = {
   origin: (origin, callback) => {
     if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
@@ -33,13 +33,17 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Allow cookies and credentials
-};
+}; */
 
 
 app.use(express.json())
-app.use(cors(corsOptions));
+//app.use(cors(corsOptions));
 
-app.options('*', cors(corsOptions));
+//app.options('*', cors(corsOptions));
+//remove this when deploying 
+app.use(cors({
+  origin: 'http://localhost:3000'
+}));
 
 const PORT =  process.env.PORT || 4000
 
@@ -59,6 +63,7 @@ const initializeDBAndServer = async () => {
   } catch (e) {
     console.log(`DB Error: ${e.message}`);
     process.exit(1);
+
   }
 };
 initializeDBAndServer();
@@ -72,7 +77,7 @@ const authenticateToken = (request, response, next) => {
     jwtToken = authHeader.split(" ")[1];
   }
   if (jwtToken === undefined) {
-     console.log(`token ${jwtToken}`)
+    
     response.status(401).json({error_msg:"Invalid JWT Token"});
   } else {
     jwt.verify(jwtToken, "MY_SECRET_TOKEN", async (error, payload) => {
@@ -147,6 +152,7 @@ if (dbUser === undefined) {
 
 //GET Products
 app.get("/products/",authenticateToken, async (request, response) => {
+  try{ 
   const getProductsQuery = `
     SELECT
       *
@@ -155,11 +161,15 @@ app.get("/products/",authenticateToken, async (request, response) => {
       ;`;
   const productsArray = await db.all(getProductsQuery);
   response.status(201).json({products:productsArray});
+  }catch(error){
+    response.status(500).json({message:"An error occurred while adding the product to the cart"});
+  }
 });
 
 //GET Particular Product
 app.get("/products/:id/",authenticateToken, async (request, response) => {
   const {id} =request.params;
+  try {
   const getProductsQuery = `
     SELECT
       *
@@ -168,6 +178,10 @@ app.get("/products/:id/",authenticateToken, async (request, response) => {
       ;`;
   const productDetails = await db.get(getProductsQuery);
   response.status(201).json({productDetails});
+  } catch (error) {
+    
+    response.status(500).json({error_msg:"An error occurred while adding the product to the cart"});
+  }
 });
 
 
@@ -217,7 +231,7 @@ app.post("/cart/add",authenticateToken,async(request,response)=>{
   }
    
   }catch (error) {
-    console.error(error);
+   
     response.status(500).json({message:"An error occurred while adding the product to the cart"});
   }
 
@@ -246,7 +260,7 @@ app.get('/cart', authenticateToken, async (request, response) => {
     
     response.status(200).json({ cartItems });
   } catch (error) {
-    console.error(error);
+    
     response.status(500).json({ error: 'Failed to fetch cart items' });
   }
 });
@@ -254,7 +268,7 @@ app.get('/cart', authenticateToken, async (request, response) => {
 // Endpoint to DELETE cart product
 app.delete('/cart', authenticateToken, async (request, response) => {
   const {productId} = request.body;
-  
+  const {userId} = request.payload;
   try {
     // delete the cart item
     const deleteCartItemQuery = `
@@ -263,13 +277,25 @@ app.delete('/cart', authenticateToken, async (request, response) => {
     `;
     
      await db.run(deleteCartItemQuery , [productId]);
-     //get cart items query
-    const getCartItemsQuery = `
-      SELECT * FROM cart
+
+    // Fetch the user's cart
+    const getCartQuery = `
+      SELECT c.product_id, p.name, p.price, c.quantity,p.imageUrl
+      FROM cart AS c
+      JOIN products AS p ON c.product_id = p.id
+      JOIN user_cart AS uc ON c.cart_id = uc.cart_id
+      WHERE uc.user_id = ?
     `;
-    const cartItems = await db.all(getCartItemsQuery);
+    
+    const cartItems = await db.all(getCartQuery, [userId]);
     
     // Respond with the remaining cart items or success message
+    
+
+    if (cartItems.length === 0) {
+      return response.status(404).json({ error: 'No items in the cart' });
+    }
+    
     response.status(200).json({ message: 'Product removed from cart', cartItems });
 
   } catch (error) {
