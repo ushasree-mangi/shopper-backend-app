@@ -41,7 +41,7 @@ app.use(cors(corsOptions));
 
 app.options('*', cors(corsOptions));
 
-const PORT = process.env.PORT || 4000
+const PORT =  4000
 
 const dbPath = path.join(__dirname, "shopperAppDatabase.db");
 
@@ -72,12 +72,12 @@ const authenticateToken = (request, response, next) => {
     jwtToken = authHeader.split(" ")[1];
   }
   if (jwtToken === undefined) {
-   
+     console.log(`token ${jwtToken}`)
     response.status(401).json({error_msg:"Invalid JWT Token"});
   } else {
     jwt.verify(jwtToken, "MY_SECRET_TOKEN", async (error, payload) => {
       if (error) {
-        response.status(401).json({error_msg:"Invalid JWT Token"});
+        response.status(400).json({error_msg:"Invalid JWT Token"});
       } else {
        
         request.payload=payload
@@ -257,18 +257,23 @@ app.delete('/cart', authenticateToken, async (request, response) => {
   
   try {
     // delete the cart item
-    const getCartQuery = `
+    const deleteCartItemQuery = `
       DELETE from cart 
-      WHERE cart.product_id = ?
+      WHERE product_id = ?
     `;
     
-    const response = await db.run(getCartQuery, [productId]);
+     await db.run(deleteCartItemQuery , [productId]);
+     //get cart items query
+    const getCartItemsQuery = `
+      SELECT * FROM cart
+    `;
+    const cartItems = await db.all(getCartItemsQuery);
     
-  
-    
-    response.status(200).json({ cartItems });
+    // Respond with the remaining cart items or success message
+    response.status(200).json({ message: 'Product removed from cart', cartItems });
+
   } catch (error) {
-    console.error(error);
+    
     response.status(500).json({ error: 'Failed to delete cart item' });
   }
 });
