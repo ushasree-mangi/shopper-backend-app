@@ -41,7 +41,7 @@ app.use(cors(corsOptions));
 
 app.options('*', cors(corsOptions));
 
-const PORT =  4000
+const PORT =  process.env.PORT || 4000
 
 const dbPath = path.join(__dirname, "shopperAppDatabase.db");
 
