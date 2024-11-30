@@ -97,7 +97,7 @@ app.post("/register/", async (request, response) => {
   if (dbUser === undefined) {
     const createUserQuery = `
       INSERT INTO 
-        user (id ,username, password) 
+        users (id ,username, password) 
       VALUES 
         ('${id}',
           '${username}', 
