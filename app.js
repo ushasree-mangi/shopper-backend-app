@@ -13,33 +13,28 @@ const {v4}=require("uuid")
 const uuidv4=v4
 
 
-const allowedOrigins = [
+/*const allowedOrigins = [
   'https://ushasree-mangi-shopper-ftqsv9u84-ushasree-mangis-projects.vercel.app',
   'https://ushasree-mangi-shopper-app.vercel.app',
   'https://ushasree-mangi-shopper-app-git-main-ushasree-mangis-projects.vercel.app'
   
-];
+]; */
 
 
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  
+  origin: 'https://ushasree-mangi-shopper-app.vercel.app', // Temporarily allow all origins for debugging
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Allow cookies and credentials
+  credentials: true,
 }; 
 
 
 app.use(express.json())
 app.use(cors(corsOptions));
 
-app.options('*', cors(corsOptions));
+
 
 
 const PORT =  process.env.PORT || 4000
