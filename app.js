@@ -119,7 +119,7 @@ app.post("/register/", async (request, response) => {
 //Login Api
 app.post("/login", async (request, response) => {
 const { username, password } = request.body;
-const selectUserQuery = `SELECT * FROM user WHERE username = '${username}'`;
+const selectUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
 const dbUser = await db.get(selectUserQuery);
 if (dbUser === undefined) {
   response.status(400).json({ error_msg: "invalid user" });
