@@ -39,7 +39,7 @@ app.use(cors(corsOptions));
 
 const PORT =  process.env.PORT || 4000
 
-const dbPath = path.join(__dirname, "jobbyAppDatabase.db");
+const dbPath = path.join(__dirname, "shopperAppDatabase.db");
 
 let db = null;
 
